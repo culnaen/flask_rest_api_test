@@ -10,6 +10,6 @@ def register_routes(app: Flask, user_view: MethodView):
                      view_func=user_view,
                      defaults={"user_id": None, },
                      methods=["GET"])
-    app.add_url_rule("/users/<int:user_id>",
+    app.add_url_rule("/users/<string:user_id>",
                      view_func=user_view,
                      methods=["GET", "PUT", "DELETE"])

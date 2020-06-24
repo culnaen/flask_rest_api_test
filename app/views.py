@@ -1,11 +1,8 @@
-from flask import request, Request, jsonify
+from flask import request, jsonify
 from flask.views import MethodView
 
 from .database import UserRepository
 from .model import User
-
-
-request: Request
 
 
 class UserView(MethodView):
