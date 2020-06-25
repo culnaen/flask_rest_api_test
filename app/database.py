@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Union
 import json
 
 from .model import User
@@ -35,16 +35,26 @@ class UserRepository:
         users = self._read()
         return list(users.values())
 
-    def get(self, user_id: str) -> Optional[Dict[str, str]]:
+    def get(self, user_id: str) -> Union[str, Dict[str, str]]:
         users = self._read()
         user = users.get(user_id)
         if user is None:
-            return None
+            return "user not found"
         return user
 
-    def delete(self, user_id: str) -> None:
+    def delete(self, user_id: str) -> str:
         users = self._read()
-        del users[user_id]
-        self._write(users)
+        if self._delete(users, user_id):
+            self._write(users)
+            return "deleted"
+        else:
+            return "user not found"
+
+    def _delete(self, users: Dict[str, Dict[str, str]], user_id: str):
+        try:
+            del users[user_id]
+        except KeyError:
+            return False
+        return True
 
 

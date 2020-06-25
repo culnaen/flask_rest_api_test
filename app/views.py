@@ -7,26 +7,39 @@ from .model import User
 
 class UserView(MethodView):
     def __init__(self, user_repository: UserRepository):
+        self.endpoint = "user"
         self.user_repository = user_repository
 
     def get(self, user_id):
         if user_id is None:
-            return jsonify(self.user_repository.get_all())
-        return jsonify(self.user_repository.get(user_id))
+            result = jsonify(self.user_repository.get_all())
+        else:
+            result = jsonify(self.user_repository.get(user_id))
+        return result
 
     def post(self):
         data = request.get_json()
         if data:
-            user = User(**data)
-            result = self.user_repository.set(user)
-            return jsonify(result)
+            try:
+                user = User(**data)
+            except TypeError:
+                return jsonify("invalid params"), 400
+            result = self.user_repository.set(user), 200
+        else:
+            result = jsonify("params not specified"), 400
+        return result
 
     def delete(self, user_id):
-        self.user_repository.delete(user_id)
-        return jsonify("deleted")
+        return jsonify(self.user_repository.delete(user_id))
 
     def put(self, user_id):
         data = request.get_json()
-        user = User(user_id=user_id, name=data["name"])
-        result = self.user_repository.set(user)
-        return jsonify(result)
+        if data:
+            try:
+                user = User(user_id=user_id, **data)
+                result = self.user_repository.set(user)
+            except TypeError:
+                result = jsonify("invalid params"), 400
+        else:
+            result = jsonify("params not specified"), 400
+        return result
