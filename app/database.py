@@ -3,6 +3,7 @@ import json
 
 from .model import User
 from .utils import make_id
+
 Database = Dict[str, Dict[str, str]]
 
 
@@ -67,5 +68,3 @@ class UserRepository:
         except KeyError:
             return False
         return True
-
-
