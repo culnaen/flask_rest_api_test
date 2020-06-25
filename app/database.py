@@ -2,7 +2,7 @@ from typing import List, Dict, Union
 import json
 
 from .model import User
-
+from .utils import make_id
 Database = Dict[str, Dict[str, str]]
 
 
@@ -19,18 +19,10 @@ class UserRepository:
         with open(self.db, "w") as f:
             json.dump(data, f)
 
-    def make_id(self):
-        with open("count") as f:
-            count = int(f.readline().strip()) + 1
-        count = str(count)
-        with open("count", "w") as f:
-            f.write(count)
-        return count
-
     def set(self, user: User) -> Union[str, Dict[str, str]]:
         users = self._read()
         if user.user_id is None:
-            user_id = self.make_id()
+            user_id = make_id()
             result = self._set(users, user_id, user.name)
         else:
             result = self._update(users, user.user_id, user.name)
