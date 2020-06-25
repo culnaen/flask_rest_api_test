@@ -40,7 +40,7 @@ class UserView(MethodView):
         if data:
             try:
                 user = User(user_id=user_id, **data)
-                result = self.user_repository.set(user), 200
+                result = jsonify(self.user_repository.set(user)), 200
             except TypeError:
                 result = jsonify("invalid params"), 400
         else:

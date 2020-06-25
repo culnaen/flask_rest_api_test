@@ -17,19 +17,28 @@ class UserRepository:
         with open(self.db, "w") as f:
             json.dump(data, f)
 
-    def set(self, user: User) -> Dict[str, str]:
+    def set(self, user: User) -> Union[str, Dict[str, str]]:
         users = self._read()
         if user.user_id is None:
             user_id = str(len(users) + 1)
-            return self._set(users, user_id, user.name)
+            result = self._set(users, user_id, user.name)
         else:
-            return self._set(users, user.user_id, user.name)
+            result = self._update(users, user.user_id, user.name)
+        self._write(users)
+        return result
 
     def _set(self, users: Dict[str, Dict[str, str]],  user_id: str, name: str) -> Dict[str, str]:
         user = users.setdefault(user_id, {"user_id": user_id, "name": name})
-        user["name"] = name
         self._write(users)
         return user
+
+    def _update(self, users: Dict[str, Dict[str, str]], user_id: str, name: str) -> Union[str, Dict[str, str]]:
+        user = users.get(user_id)
+        if user is None:
+            return "user not found"
+        else:
+            user["name"] = name
+            return user
 
     def get_all(self) -> List[Dict[str, str]]:
         users = self._read()
