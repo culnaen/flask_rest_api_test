@@ -2,37 +2,40 @@ from typing import List, Dict, Union
 import json
 
 from .model import User
+from .utils import make_id
+
+Database = Dict[str, Dict[str, str]]
 
 
 class UserRepository:
     def __init__(self, db: str):
         self.db = db
 
-    def _read(self) -> Dict[str, Dict[str, str]]:
+    def _read(self) -> Database:
         with open(self.db) as f:
             users = json.load(f)
         return users
 
-    def _write(self, data) -> None:
+    def _write(self, data: Database) -> None:
         with open(self.db, "w") as f:
             json.dump(data, f)
 
     def set(self, user: User) -> Union[str, Dict[str, str]]:
         users = self._read()
         if user.user_id is None:
-            user_id = str(len(users) + 1)
+            user_id = make_id()
             result = self._set(users, user_id, user.name)
         else:
             result = self._update(users, user.user_id, user.name)
         self._write(users)
         return result
 
-    def _set(self, users: Dict[str, Dict[str, str]],  user_id: str, name: str) -> Dict[str, str]:
+    def _set(self, users: Database,  user_id: str, name: str) -> Dict[str, str]:
         user = users.setdefault(user_id, {"user_id": user_id, "name": name})
         self._write(users)
         return user
 
-    def _update(self, users: Dict[str, Dict[str, str]], user_id: str, name: str) -> Union[str, Dict[str, str]]:
+    def _update(self, users: Database, user_id: str, name: str) -> Union[str, Dict[str, str]]:
         user = users.get(user_id)
         if user is None:
             return "user not found"
@@ -59,11 +62,9 @@ class UserRepository:
         else:
             return "user not found"
 
-    def _delete(self, users: Dict[str, Dict[str, str]], user_id: str):
+    def _delete(self, users: Database, user_id: str):
         try:
             del users[user_id]
         except KeyError:
             return False
         return True
-
-
