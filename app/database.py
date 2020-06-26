@@ -1,5 +1,6 @@
-from typing import List, Dict, Union
 import json
+from typing import List, Dict, Union
+from dataclasses import asdict
 
 from .model import User
 from .utils import make_id
@@ -23,25 +24,25 @@ class UserRepository:
     def set(self, user: User) -> Union[str, Dict[str, str]]:
         users = self._read()
         if user.user_id is None:
-            user_id = make_id()
-            result = self._set(users, user_id, user.name)
+            user.user_id = make_id()
+            result = self._set(users, user)
         else:
-            result = self._update(users, user.user_id, user.name)
+            result = self._update(users, user)
         self._write(users)
         return result
 
-    def _set(self, users: Database,  user_id: str, name: str) -> Dict[str, str]:
-        user = users.setdefault(user_id, {"user_id": user_id, "name": name})
+    def _set(self, users: Database,  user: User) -> Dict[str, str]:
+        user_data = users.setdefault(user.user_id, asdict(user))
         self._write(users)
-        return user
+        return user_data
 
-    def _update(self, users: Database, user_id: str, name: str) -> Union[str, Dict[str, str]]:
-        user = users.get(user_id)
-        if user is None:
+    def _update(self, users: Database, user: User) -> Union[str, Dict[str, str]]:
+        user_data = users.get(user.user_id)
+        if user_data is None:
             return "user not found"
         else:
-            user["name"] = name
-            return user
+            user_data.update(asdict(user))
+            return user_data
 
     def get_all(self) -> List[Dict[str, str]]:
         users = self._read()
